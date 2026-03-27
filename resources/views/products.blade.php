@@ -13,8 +13,8 @@
 </head>
 <body>
 
-<div class="container mt-5">
-    <div class="table-container shadow-sm">
+<div class="container mt-5">   
+    <div class="table-container shadow-sm"> </div>
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 class="text-primary fw-bold">Gestion de Stock</h2>
             <button class="btn btn-success">
