@@ -4,31 +4,26 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
-    {
+return new class extends Migration {
+    public function up(): void {
         Schema::create('products', function (Blueprint $table) {
-    $table->id();
-    $table->string('designation');             // Nom de l'article
-    $table->string('reference')->unique(); // Référence
-    $table->string('category')->nullable(); // Catégorie
-    $table->integer('quantity')->default(0); // Quantité actuelle
-    $table->integer('min_stock')->default(5); // Seuil minimum (Alerte)
-    $table->string('location')->nullable(); // Emplacement
-    $table->string('supplier')->nullable(); // Fournisseur
-    $table->timestamps();
-});
+            $table->id();
+            $table->string('name'); // اسم المنتج
+            $table->text('description')->nullable(); // الوصف (nullable باش ما يوقعش خطأ إلا كان خاوي)
+            $table->integer('quantity'); // الكمية
+            $table->decimal('price', 8, 2); // الثمن
+            $table->integer('min_stock')->default(5); // الحد الأدنى للتنبيه
+            
+            // الربط الأساسي (La Relation) بين السلعة والصنف
+            $table->foreignId('category_id')
+                  ->constrained('categories')
+                  ->onDelete('cascade'); // إلا تمسح الصنف كيتمسحوا منتجاته
+                  
+            $table->timestamps();
+        });
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
+    public function down(): void {
         Schema::dropIfExists('products');
     }
 };

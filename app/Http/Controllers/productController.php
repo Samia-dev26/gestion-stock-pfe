@@ -3,38 +3,32 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
-use App\Models\Category;
 use Illuminate\Http\Request;
 
-class ProductController extends Controller
-{
-    // عرض المنتجات والكاتيكوريات
-    public function index()
-    {
+class ProductController extends Controller {
+    // GET: جلب المنتجات مع أصنافها (طلب المؤطر)
+    public function index() {
         $products = Product::with('category')->get();
-        $categories = Category::all(); 
-        return view('dashboard', compact('products', 'categories'));
+        return response()->json($products);
     }
 
-    // إضافة منتج جديد
-    public function store(Request $request)
-    {
-        $data = $request->validate([
-            'designation' => 'required',
-            'quantite' => 'required|integer',
-            'prix' => 'required|numeric',
-            'category_id' => 'required|exists:categories,id', //
-            'seuil_minimum' => 'nullable|integer' //
+    public function store(Request $request) {
+        $validated = $request->validate([
+            'name' => 'required',
+            'quantity' => 'required|integer',
+            'price' => 'required|numeric',
+            'category_id' => 'required|exists:categories,id'
         ]);
-
-        Product::create($data);
-        return redirect()->route('dashboard')->with('success', 'Produit ajouté !');
+        Product::create($validated);
+        return response()->json(['message' => 'Produit ajouté avec succès']);
     }
 
-    // حذف منتج
-    public function destroy($id)
-    {
-        Product::findOrFail($id)->delete();
-        return redirect()->route('dashboard');
+    public function show(Product $product) {
+        return response()->json($product->load('category'));
+    }
+
+    public function destroy(Product $product) {
+        $product->delete();
+        return response()->json(['message' => 'Produit supprimé']);
     }
 }
