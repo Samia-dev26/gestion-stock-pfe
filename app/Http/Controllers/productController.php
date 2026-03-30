@@ -7,7 +7,12 @@ use Illuminate\Http\Request;
 
 class ProductController extends Controller {
     // GET: جلب المنتجات مع أصنافها (طلب المؤطر)
-    public function index() {
+public function index() {
+        $products = Product::with('category')->paginate(10);
+        return view('products', compact('products'));
+    }
+    
+    public function apiIndex() {
         $products = Product::with('category')->get();
         return response()->json($products);
     }

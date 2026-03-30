@@ -1,74 +1,37 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ProductController;
-use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\AdminController;
-use App\Http\Controllers\GestionnaireController;
-use App\Http\Controllers\AgentController;
-use App\Models\User;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ArticleController;
+use App\Http\Controllers\CategorieController;
+use App\Http\Controllers\MouvementController;
+use App\Http\Controllers\DechargeController;
+use App\Http\Controllers\InventaireController;
+use App\Http\Controllers\FournisseurController;
+use App\Http\Controllers\RapportController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\RoleController;
+use App\Http\Controllers\ProfileController;
+
+
+// هادشي بوحدو اللي خاصو يبقى باش تشوفي الـ Front-end بلا Error
+/*Route::get('/login', function () {
+    return view('auth.login'); 
+})->name('login');
+
+Route::get('/register', function () {
+    return view('auth.register'); 
+})->name('register');
+
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-*/
-
-// 🏠 الصفحة الرئيسية (اختيارية)
-Route::get('/', function () {
-    return view('welcome');
-});
-
-// 🧪 ROUTE للتجريب (Test Login)
-// دخل لهاد الرابط باش السيستم يفتح ليك Session كـ Admin وتشوف السلعة:
-// http://localhost:8000/test-login
-Route::get('/test-login', function () {
-    $user = User::where('role', 'admin')->first();
-    if (!$user) {
-        $user = User::create([
-            'name' => 'Samia Admin',
-            'email' => 'admin@test.com',
-            'password' => bcrypt('password'),
-            'role' => 'admin'
-        ]);
-    }
-    Auth::login($user);
-    return "✅ Vous êtes connecté en tant qu'ADMIN. <a href='/api/products-list'>Voir les produits</a>";
-});
-
-// -----------------------------------------------------------------
-// 👑 1. مجموعة الـ Admin (التحكم الكامل)
-// -----------------------------------------------------------------
-Route::middleware(['auth', 'role:admin'])->group(function () {
-    Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
-    
-    // CRUD Categories
-    Route::resource('categories', CategoryController::class);
-});
-
-// -----------------------------------------------------------------
-// 🧑‍💼 2. مجموعة الـ Gestionnaire (السلعة والمخزون)
-// -----------------------------------------------------------------
-Route::middleware(['auth', 'role:admin,gestionnaire'])->group(function () {
-    Route::get('/gestionnaire/dashboard', [GestionnaireController::class, 'index'])->name('gestionnaire.dashboard');
-    
-    // مسارات السلعة (القديمة اللي كانت عندك)
-    Route::get('/api/products-list', [ProductController::class, 'index']);
-    Route::resource('products', ProductController::class);
-});
-
-// -----------------------------------------------------------------
-// 👨‍🔧 3. مجموعة الـ Agent (الاستعمال فقط)
-// -----------------------------------------------------------------
-Route::middleware(['auth', 'role:admin,gestionnaire,agent'])->group(function () {
-    Route::get('/agent/dashboard', [AgentController::class, 'index'])->name('agent.dashboard');
-});
-
-// 🚪 Route ديال الـ Login (غير باش ما يبقاش يطلع ليك Error 500)
-Route::get('/login', function () {
-    return response()->json(['message' => 'Veuillez vous connecter via l\'API'], 401);
-})->name('login');
+// هادا هو السطر اللي كيقبل الطلب ديال زرار Login
+Route::post('/login', function (Request $request) {
+    // بما أنك باغية غير تشوفي الـ Dashboard، غانقولو ليه صيفطنا نيشان بلا ما تقلب فـ الداتابيز
+    return redirect()->route('admin.dashboard'); 
+});*/
+// ومن بعد كيبدا الـ middleware...
 
 
 
@@ -76,19 +39,16 @@ Route::get('/', function () {
     return redirect()->route('register');
 });
 
-// Legacy login - use auth views
+Route::get('/login', [\App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [\App\Http\Controllers\Auth\LoginController::class, 'login']);
 Route::post('/logout', [\App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout');
 
-// Register disabled (missing controller) - use /test-login
-// Route::get('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])->name('register');
-
+Route::get('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])->name('register');
+Route::post('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'register']);
 Route::middleware(['auth'])->group(function () {
 
     // Dashboard
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::get('/admin/dashboard', function () {
         return view('admin.dashboard');
@@ -145,5 +105,3 @@ Route::get('/dashboard', function () {
         })->name('logs.index');
     });
 });
-
-
