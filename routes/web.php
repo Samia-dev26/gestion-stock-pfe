@@ -69,3 +69,81 @@ Route::middleware(['auth', 'role:admin,gestionnaire,agent'])->group(function () 
 Route::get('/login', function () {
     return response()->json(['message' => 'Veuillez vous connecter via l\'API'], 401);
 })->name('login');
+
+
+
+Route::get('/', function () {
+    return redirect()->route('register');
+});
+
+// Legacy login - use auth views
+Route::post('/login', [\App\Http\Controllers\Auth\LoginController::class, 'login']);
+Route::post('/logout', [\App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout');
+
+// Register disabled (missing controller) - use /test-login
+// Route::get('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])->name('register');
+
+Route::middleware(['auth'])->group(function () {
+
+    // Dashboard
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->name('dashboard');
+
+    Route::get('/admin/dashboard', function () {
+        return view('admin.dashboard');
+    })->middleware('role:admin')->name('admin.dashboard');
+
+    Route::get('/gestionnaire/dashboard', function () {
+        return view('gestionnaire.dashboard');
+    })->middleware('role:gestionnaire,admin')->name('gestionnaire.dashboard');
+
+    Route::get('/agent/dashboard', function () {
+        return view('agent.dashboard');
+    })->middleware('role:agent,gestionnaire,admin')->name('agent.dashboard');
+
+    // Articles
+    Route::resource('articles', ArticleController::class);
+    Route::get('/articles-export', [ArticleController::class, 'export'])->name('articles.export');
+
+    // Catégories
+    Route::resource('categories', CategorieController::class);
+
+    // Mouvements
+    Route::resource('mouvements', MouvementController::class)->only(['index', 'create', 'store', 'show']);
+
+    // Décharges
+    Route::resource('decharges', DechargeController::class)->only(['index', 'create', 'store', 'show']);
+    Route::get('/decharges/{decharge}/pdf', [DechargeController::class, 'pdf'])->name('decharges.pdf');
+
+    // Notifications
+    Route::get('/notifications', function () {
+        return view('notifications.index');
+    })->name('notifications.index');
+
+    // Profile
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+    // Gestionnaire + Admin
+    Route::middleware('role:admin,gestionnaire')->group(function () {
+        Route::resource('inventaires', InventaireController::class);
+        Route::post('/inventaires/{inventaire}/valider', [InventaireController::class, 'valider'])->name('inventaires.valider');
+        Route::resource('fournisseurs', FournisseurController::class);
+        Route::get('/rapports', [RapportController::class, 'index'])->name('rapports.index');
+        Route::get('/rapports/stock', [RapportController::class, 'stockActuel'])->name('rapports.stock');
+        Route::get('/rapports/historique', [RapportController::class, 'historique'])->name('rapports.historique');
+    });
+
+    // Admin seulement
+    Route::middleware('role:admin')->group(function () {
+        Route::resource('users', UserController::class);
+        Route::post('/users/{user}/toggle', [UserController::class, 'toggleActive'])->name('users.toggle');
+        Route::resource('roles', RoleController::class);
+        Route::get('/logs', function () {
+            return view('logs.index');
+        })->name('logs.index');
+    });
+});
+
+
